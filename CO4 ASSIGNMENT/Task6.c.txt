@@ -1,0 +1,132 @@
+Task6.c
+#include <stdio.h>
+#include <string.h>
+ 
+#define MAX_ITEMS 10
+#define MAX_SALES 20
+ 
+typedef struct {
+    int day, month, year;
+} Date;
+ 
+enum ItemKind { PACKAGED, COOKED, COMBO };
+ 
+typedef struct {
+    Date expiry;
+} PackagedInfo;
+ 
+typedef struct {
+    int hour, minute;
+} CookedInfo;
+ 
+typedef struct {
+    int componentIds[3];
+    int componentCount;
+} ComboInfo;
+ 
+typedef struct {
+    int id;
+    char name[40];
+    float price;
+    int stock;
+    enum ItemKind kind;
+    union {
+        PackagedInfo packaged;
+        CookedInfo cooked;
+        ComboInfo combo;
+    } detail;
+} Item;
+ 
+typedef struct {
+    int itemId;
+    int quantity;
+    float revenue;
+} SaleLine;
+ 
+int dateToKey(Date d)
+{
+    return d.year * 10000 + d.month * 100 + d.day;
+}
+ 
+Item *findItem(Item items[], int n, int id)
+{
+    for (int i = 0; i < n; i++)
+        if (items[i].id == id)
+            return &items[i];
+    return NULL;
+}
+ 
+int recordSale(Item items[], int n, int id, int quantity,
+               SaleLine sales[], int *saleCount)
+{
+    Item *item = findItem(items, n, id);
+ 
+    if (item == NULL || quantity <= 0 ||
+        item->stock < quantity || *saleCount >= MAX_SALES)
+        return 0;
+ 
+    item->stock -= quantity;
+    sales[*saleCount].itemId = id;
+    sales[*saleCount].quantity = quantity;
+    sales[*saleCount].revenue = item->price * quantity;
+    (*saleCount)++;
+    return 1;
+}
+ 
+void expiryWarning(const Item items[], int n, Date today)
+{
+    int todayKey = dateToKey(today);
+ 
+    for (int i = 0; i < n; i++) {
+        if (items[i].kind == PACKAGED) {
+            int expiryKey = dateToKey(items[i].detail.packaged.expiry);
+            if (expiryKey >= todayKey && expiryKey <= todayKey + 2)
+                printf("Expiring soon: %s\\n", items[i].name);
+        }
+    }
+}
+ 
+void sortSalesByRevenue(SaleLine sales[], int count)
+{
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = 0; j < count - i - 1; j++) {
+            if (sales[j].revenue < sales[j + 1].revenue) {
+                SaleLine temp = sales[j];
+                sales[j] = sales[j + 1];
+                sales[j + 1] = temp;
+            }
+        }
+    }
+}
+ 
+int main(void)
+{
+    Item items[MAX_ITEMS] = {
+        {1, "Juice", 30.0f, 10, PACKAGED, {.packaged = {{16,11,2026}}}},
+        {2, "Sandwich", 50.0f, 8, COOKED, {.cooked = {10,30}}},
+        {3, "Combo Meal", 100.0f, 5, COMBO,
+         {.combo = {{1,2,0}, 2}}}
+    };
+    SaleLine sales[MAX_SALES];
+    int saleCount = 0;
+    Date today = {14, 11, 2026};
+ 
+    printf("Sale 1: %s\\n",
+           recordSale(items, 3, 1, 2, sales, &saleCount)
+           ? "accepted" : "rejected");
+    printf("Sale 2: %s\\n",
+           recordSale(items, 3, 2, 20, sales, &saleCount)
+           ? "accepted" : "rejected");
+ 
+    expiryWarning(items, 3, today);
+    sortSalesByRevenue(sales, saleCount);
+ 
+    printf("Daily revenue summary:\\n");
+    for (int i = 0; i < saleCount; i++)
+        printf("Item %d: quantity %d, revenue %.2f\\n",
+               sales[i].itemId, sales[i].quantity,
+               sales[i].revenue);
+ 
+    printf("Remaining juice stock: %d\\n", items[0].stock);
+    return 0;
+}

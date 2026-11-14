@@ -1,0 +1,66 @@
+Task1.2.c
+#include <stdio.h>
+#include <string.h>
+ 
+#define MAX_PATIENTS 100
+ 
+typedef struct {
+    int day, month, year;
+} Date;
+ 
+typedef struct {
+    int systolic, diastolic;
+} BloodPressure;
+ 
+typedef struct {
+    char name[100];
+    int age;
+    char phone[16];
+    BloodPressure bp;
+    Date visitDate;
+} Patient;
+ 
+int addPatient(Patient patients[], int *count, const Patient *newPatient)
+{
+    if (*count >= MAX_PATIENTS)
+        return 0;
+ 
+    patients[*count] = *newPatient;
+    (*count)++;
+    return 1;
+}
+ 
+void sortByAge(Patient patients[], int count)
+{
+    int i, j;
+    Patient temp;
+ 
+    for (i = 0; i < count - 1; i++) {
+        for (j = 0; j < count - i - 1; j++) {
+            if (patients[j].age > patients[j + 1].age) {
+                temp = patients[j];
+                patients[j] = patients[j + 1];
+                patients[j + 1] = temp;
+            }
+        }
+    }
+}
+ 
+int main(void)
+{
+    Patient patients[MAX_PATIENTS] = {0};
+    int count = 0;
+    Patient a = {"Anu", 35, "9876543210", {120, 80}, {14, 11, 2026}};
+    Patient b = {"Bala", 28, "9123456780", {118, 78}, {13, 11, 2026}};
+ 
+    addPatient(patients, &count, &a);
+    addPatient(patients, &count, &b);
+    sortByAge(patients, count);
+ 
+    for (int i = 0; i < count; i++) {
+        printf("%s, age %d, BP %d/%d\\n", patients[i].name,
+               patients[i].age, patients[i].bp.systolic,
+               patients[i].bp.diastolic);
+    }
+    return 0;
+}

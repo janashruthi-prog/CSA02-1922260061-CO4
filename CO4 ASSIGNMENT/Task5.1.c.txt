@@ -1,0 +1,45 @@
+Task5.1.c
+#include <stdio.h>
+ 
+/* (a) Automatic local counter: resets on every call. */
+int autoToken(void)
+{
+    int token = 1000;
+    return ++token;
+}
+ 
+/* (b) Static local counter: retains its value between calls. */
+int nextToken(void)
+{
+    static int token = 1000;
+    return ++token;
+}
+ 
+/* (c) Global counter: definition can be in one source file. */
+int globalToken = 1000;
+ 
+int nextGlobalToken(void)
+{
+    return ++globalToken;
+}
+ 
+int main(void)
+{
+    printf("static: %d %d %d\\n",
+           nextToken(), nextToken(), nextToken());
+ 
+    printf("auto: %d %d %d\\n",
+           autoToken(), autoToken(), autoToken());
+ 
+    printf("global: %d %d %d\\n",
+           nextGlobalToken(), nextGlobalToken(),
+           nextGlobalToken());
+ 
+    /* (d) register loop variable */
+    printf("register loop: ");
+    for (register int i = 1; i <= 3; i++)
+        printf("%d ", i);
+    printf("\\n");
+ 
+    return 0;
+}

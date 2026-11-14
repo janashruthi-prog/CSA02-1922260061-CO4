@@ -1,0 +1,17 @@
+Task5.2.c
+#include <stdio.h>
+int nextCounter(int *counter)
+{
+    return ++(*counter);
+}
+ 
+int main(void)
+{
+    int veg = 1000;
+    int nonVeg = 2000;
+ 
+    printf("Veg: %d %d\\n", nextCounter(&veg), nextCounter(&veg));
+    printf("Non-veg: %d %d\\n",
+           nextCounter(&nonVeg), nextCounter(&nonVeg));
+    return 0;
+}
